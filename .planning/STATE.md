@@ -5,24 +5,20 @@
 See: `.planning/PROJECT.md` (updated 2026-10-12)
 
 **Core value:** Clear, demonstrable, and educational graph-coloring conflict resolution that a solo student can thoroughly explain in a viva and easily modify.
-**Current focus:** Phase 1: Project Foundation, Conflict Graph & Pure Algorithms
+**Current focus:** Phase 2: Interactive JavaFX Canvas, Step Animator & Timetable View
 
 ## Current Phase
 
-- **Active Phase**: Phase 1
-- **Phase Goal**: Build project scaffolding, domain models, conflict graph builder, Welsh-Powell & Recursive Backtracking with execution tracing and unit tests.
-- **Context**: `.planning/phases/01-project-foundation-conflict-graph-pure-algorithms/01-CONTEXT.md`
-- **Plans**:
-  - `01-01-PLAN.md`: Maven Scaffolding, Domain Models & Conflict Graph Builder
-  - `01-02-PLAN.md`: Pure Graph Coloring Algorithms & Execution Tracing
-- **Status**: Ready to execute (`/gsd-execute-phase 1`)
+- **Active Phase**: Phase 2
+- **Phase Goal**: Build custom JavaFX Canvas with circular node layout, animated step-by-step coloring playback engine, live algorithmic explanation banner, and timetable schedule view.
+- **Status**: Ready to discuss (`/gsd-discuss-phase 2`) or plan (`/gsd-plan-phase 2`)
 
 ## Phase Map
 
 | Phase | Name | Mode | Status |
 |---|---|---|---|
-| 1 | Project Foundation, Conflict Graph & Pure Algorithms | mvp | Ready to plan |
-| 2 | Interactive JavaFX Canvas, Step Animator & Timetable View | mvp | Pending |
+| 1 | Project Foundation, Conflict Graph & Pure Algorithms | mvp | Completed ✓ |
+| 2 | Interactive JavaFX Canvas, Step Animator & Timetable View | mvp | Ready to plan |
 | 3 | Benchmarking, SQLite Persistence & Dataset Management | mvp | Pending |
 
 ## Key Decisions

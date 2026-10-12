@@ -40,13 +40,13 @@ ExamGuard is a DAA college project that solves the Exam Timetable Conflict Minim
 
 | Requirement ID | Category | Phase | Status |
 |---|---|---|---|
-| REQ-GRAPH-01 | Graph Modeling | Phase 1 | Pending |
-| REQ-GRAPH-02 | Graph Modeling | Phase 1 | Pending |
-| REQ-GRAPH-03 | Graph Modeling | Phase 1 | Pending |
-| REQ-ALGO-01 | Algorithms | Phase 1 | Pending |
-| REQ-ALGO-02 | Algorithms | Phase 1 | Pending |
-| REQ-ALGO-03 | Algorithms | Phase 1 | Pending |
-| REQ-ALGO-04 | Algorithms | Phase 1 | Pending |
+| REQ-GRAPH-01 | Graph Modeling | Phase 1 | Completed |
+| REQ-GRAPH-02 | Graph Modeling | Phase 1 | Completed |
+| REQ-GRAPH-03 | Graph Modeling | Phase 1 | Completed |
+| REQ-ALGO-01 | Algorithms | Phase 1 | Completed |
+| REQ-ALGO-02 | Algorithms | Phase 1 | Completed |
+| REQ-ALGO-03 | Algorithms | Phase 1 | Completed |
+| REQ-ALGO-04 | Algorithms | Phase 1 | Completed |
 | REQ-ANIM-01 | Visualization & UI | Phase 2 | Pending |
 | REQ-ANIM-02 | Visualization & UI | Phase 2 | Pending |
 | REQ-ANIM-03 | Visualization & UI | Phase 2 | Pending |
