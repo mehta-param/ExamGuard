@@ -11,7 +11,8 @@ See: `.planning/PROJECT.md` (updated 2026-10-12)
 
 - **Active Phase**: Phase 2
 - **Phase Goal**: Build custom JavaFX Canvas with circular node layout, animated step-by-step coloring playback engine, live algorithmic explanation banner, and timetable schedule view.
-- **Status**: Ready to discuss (`/gsd-discuss-phase 2`) or plan (`/gsd-plan-phase 2`)
+- **Context**: `.planning/phases/02-interactive-javafx-canvas-step-animator-timetable-view/02-CONTEXT.md`
+- **Status**: Ready to plan (`/gsd-plan-phase 2`)
 
 ## Phase Map
 
