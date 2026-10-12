@@ -22,13 +22,17 @@ Phase 2 delivers the interactive visual layer of ExamGuard:
     - Center: `GraphCanvas` + bottom playback controls (`Play`, `Pause`, `Step-Forward`, `Reset`) + live explanation banner label.
     - Right Panel: Timetable card panel displaying assigned exam slots and "Zero Conflicts Verified ✓" status badge.
 
-### 2.2 Dynamic Graph Rebuilding on Subset Change
-- When a user selects or deselects a subject:
-  1. Filter the active subjects: `selectedSubjects = allSubjects.stream().filter(...).toList()`.
-  2. Rebuild the graph: `activeGraph = ConflictGraphBuilder.build(selectedSubjects, allEnrollments, allStudents)`.
-  3. Recompute coloring using the selected algorithm (`WelshPowellAlgorithm` or `BacktrackingAlgorithm`).
-  4. Redraw `GraphCanvas` with the new vertex count and reset the `GraphAnimator`.
-  5. Update the Timetable panel to display the valid conflict-free schedule for the active subset.
+### 2.2 Dynamic Graph Rebuilding on Subset Change & State Invalidation Safeguards
+- **Clean Graph Rebuild**:
+  - `activeGraph = ConflictGraphBuilder.build(selectedSubjects, allEnrollments, allStudents)`.
+  - Because `subjectMap` in `ConflictGraphBuilder` only indexes `selectedSubjects`, any enrollments for excluded subjects are completely omitted. No edges or clash metadata can ever involve an excluded subject.
+- **State Invalidation Guarantee**:
+  - Whenever the subject selection changes:
+    1. Any running animation is immediately stopped: `animator.reset()`.
+    2. The previous timetable and execution trace are immediately invalidated.
+    3. The `GraphCanvas` resets its vertex colors and clears any active highlights.
+    4. The timetable panel is cleared (or immediately regenerated for the active subset and selected algorithm) so the displayed timetable **always strictly matches** the current selection and algorithm.
+    5. The explanation banner displays: *"Active subjects updated (N subjects). Ready to run."*
 
 ### 2.3 Circular Canvas Geometry
 - Node positioning formula:
