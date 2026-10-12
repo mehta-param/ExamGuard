@@ -37,10 +37,12 @@ public class TimetablePanel extends VBox {
         titleLabel = new Label("Exam Timetable");
         titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
         titleLabel.setTextFill(Color.web("#0F172A"));
+        titleLabel.setStyle("-fx-text-fill: #0F172A;");
 
         subtitleLabel = new Label("Slots: 0 | Active Subjects: 0");
         subtitleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
         subtitleLabel.setTextFill(Color.web("#334155"));
+        subtitleLabel.setStyle("-fx-text-fill: #334155;");
 
         // Status Badge (Pill)
         statusBadge = new Label("Awaiting Solution...");
@@ -140,13 +142,15 @@ public class TimetablePanel extends VBox {
                 hexColor
         ));
 
-        Label slotTitle = new Label("Timeslot " + slotNum);
+        Label slotTitle = new Label("Slot " + slotNum);
         slotTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-        slotTitle.setTextFill(Color.web("#0F172A")); // Deep dark readable text
+        slotTitle.setTextFill(Color.web("#0F172A"));
+        slotTitle.setStyle("-fx-text-fill: #0F172A;");
 
         Label countBadge = new Label("(" + subjects.size() + " exam" + (subjects.size() > 1 ? "s" : "") + ")");
         countBadge.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
         countBadge.setTextFill(Color.web("#334155"));
+        countBadge.setStyle("-fx-text-fill: #334155;");
 
         slotHeader.getChildren().addAll(colorDot, slotTitle, countBadge);
         card.getChildren().add(slotHeader);
@@ -159,11 +163,20 @@ public class TimetablePanel extends VBox {
             Label codeLbl = new Label(s.getCode());
             codeLbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
             codeLbl.setTextFill(Color.web("#0F172A"));
-            codeLbl.setStyle("-fx-background-color: #F1F5F9; -fx-border-color: #CBD5E1; -fx-border-width: 1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 3 8 3 8;");
+            codeLbl.setStyle(
+                    "-fx-text-fill: #0F172A; " +
+                    "-fx-background-color: #F1F5F9; " +
+                    "-fx-border-color: #CBD5E1; " +
+                    "-fx-border-width: 1; " +
+                    "-fx-border-radius: 4; " +
+                    "-fx-background-radius: 4; " +
+                    "-fx-padding: 3 8 3 8;"
+            );
 
             Label nameLbl = new Label(s.getName());
             nameLbl.setFont(Font.font("Segoe UI", FontWeight.SEMI_BOLD, 12));
-            nameLbl.setTextFill(Color.web("#0F172A")); // Maximum contrast dark text
+            nameLbl.setTextFill(Color.web("#0F172A"));
+            nameLbl.setStyle("-fx-text-fill: #0F172A;");
 
             itemRow.getChildren().addAll(codeLbl, nameLbl);
             card.getChildren().add(itemRow);
