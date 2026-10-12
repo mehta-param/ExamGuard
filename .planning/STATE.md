@@ -10,7 +10,7 @@ See: `.planning/PROJECT.md` (updated 2026-10-12)
 ## Current Phase
 
 - **Active Phase**: Phase 2
-- **Phase Goal**: Build custom JavaFX Canvas with circular node layout, animated step-by-step coloring playback engine, live algorithmic explanation banner, and timetable schedule view.
+- **Phase Goal**: Build custom JavaFX Canvas with circular node layout, animated step-by-step coloring playback engine, live explanation banner, conflict-free timetable view, and dynamic subject subset selection.
 - **Context**: `.planning/phases/02-interactive-javafx-canvas-step-animator-timetable-view/02-CONTEXT.md`
 - **Status**: Ready to plan (`/gsd-plan-phase 2`)
 
@@ -20,7 +20,7 @@ See: `.planning/PROJECT.md` (updated 2026-10-12)
 |---|---|---|---|
 | 1 | Project Foundation, Conflict Graph & Pure Algorithms | mvp | Completed ✓ |
 | 2 | Interactive JavaFX Canvas, Step Animator & Timetable View | mvp | Ready to plan |
-| 3 | Benchmarking, SQLite Persistence & Dataset Management | mvp | Pending |
+| 3 | Benchmarking, SQLite Persistence & Entity CRUD Management | mvp | Pending |
 
 ## Key Decisions
 

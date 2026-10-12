@@ -21,6 +21,7 @@ ExamGuard is a DAA college project that solves the Exam Timetable Conflict Minim
 - **REQ-ANIM-02**: Dynamic visual feedback: highlight active vertex, display candidate color fills, and highlight conflicting edges with adjacent vertices.
 - **REQ-ANIM-03**: Animation playback controls: Play, Pause, Step-Forward, Reset, and adjustable Speed Slider.
 - **REQ-ANIM-04**: Live text explanation banner describing the exact algorithmic action occurring at each step in plain English for viva clarity.
+- **REQ-ANIM-05**: Subject subset selection: interactive checkbox selection allowing users to select/deselect subjects; dynamically rebuilds the active `ConflictGraph` and regenerates a valid timetable using only the selected subjects.
 
 ### Timetable & Validation View (`TIME`)
 - **REQ-TIME-01**: Display conflict-free timetable view grouped by Timeslot with scheduled subjects.
@@ -32,8 +33,8 @@ ExamGuard is a DAA college project that solves the Exam Timetable Conflict Minim
 
 ### Data Management & Persistence (`DATA`)
 - **REQ-DATA-01**: Preloaded demo datasets (Small 5-subject, Medium 12-subject, Dense/clash-heavy).
-- **REQ-DATA-02**: Manual entry UI for subjects and student course enrollments.
-- **REQ-DATA-03**: CSV import and export for subjects and student enrollments.
+- **REQ-DATA-02**: Full CRUD management UI (Add, Edit, Delete) for Subjects, Students, and Student-Subject Enrollments.
+- **REQ-DATA-03**: CSV import and export for subjects and student enrollments (optional utility).
 - **REQ-DATA-04**: Local SQLite database persistence via JDBC.
 
 ## Traceability Matrix
@@ -51,6 +52,7 @@ ExamGuard is a DAA college project that solves the Exam Timetable Conflict Minim
 | REQ-ANIM-02 | Visualization & UI | Phase 2 | Pending |
 | REQ-ANIM-03 | Visualization & UI | Phase 2 | Pending |
 | REQ-ANIM-04 | Visualization & UI | Phase 2 | Pending |
+| REQ-ANIM-05 | Visualization & UI | Phase 2 | Pending |
 | REQ-TIME-01 | Timetable View | Phase 2 | Pending |
 | REQ-TIME-02 | Timetable View | Phase 2 | Pending |
 | REQ-PERF-01 | Benchmarking | Phase 3 | Pending |

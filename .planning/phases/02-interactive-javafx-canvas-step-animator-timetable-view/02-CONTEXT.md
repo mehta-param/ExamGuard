@@ -18,10 +18,19 @@ Phase 2 delivers the interactive visual layer of ExamGuard:
   - `com.examguard.ui.GraphAnimator`: Controls animation replay of `ExecutionTrace` using JavaFX `Timeline` (~600ms per step).
   - `com.examguard.ui.MainView`: Pure Java layout (`BorderPane`) containing:
     - Top: Algorithm selection (`ComboBox`), "Start Animation" button, "Reset" button.
+    - Left Panel: Subject Subset Selection checklist (`CheckBox` per subject) allowing live inclusion/exclusion; toggling immediately rebuilds the active `ConflictGraph` and regenerates a valid timetable.
     - Center: `GraphCanvas` + bottom playback controls (`Play`, `Pause`, `Step-Forward`, `Reset`) + live explanation banner label.
-    - Right: Timetable card panel displaying assigned exam slots and conflict verification badge.
+    - Right Panel: Timetable card panel displaying assigned exam slots and "Zero Conflicts Verified ✓" status badge.
 
-### 2.2 Circular Canvas Geometry
+### 2.2 Dynamic Graph Rebuilding on Subset Change
+- When a user selects or deselects a subject:
+  1. Filter the active subjects: `selectedSubjects = allSubjects.stream().filter(...).toList()`.
+  2. Rebuild the graph: `activeGraph = ConflictGraphBuilder.build(selectedSubjects, allEnrollments, allStudents)`.
+  3. Recompute coloring using the selected algorithm (`WelshPowellAlgorithm` or `BacktrackingAlgorithm`).
+  4. Redraw `GraphCanvas` with the new vertex count and reset the `GraphAnimator`.
+  5. Update the Timetable panel to display the valid conflict-free schedule for the active subset.
+
+### 2.3 Circular Canvas Geometry
 - Node positioning formula:
   $$\theta_i = \frac{2\pi \cdot i}{N} - \frac{\pi}{2}, \quad x_i = c_x + R \cos\theta_i, \quad y_i = c_y + R \sin\theta_i$$
 - Default radius $R \approx 160\text{px}$, node circle radius $r = 24\text{px}$.
@@ -38,7 +47,7 @@ Phase 2 delivers the interactive visual layer of ExamGuard:
   - Active vertex highlight: `#FFF3CD` with bold golden border.
   - Clashing edge highlight: `#E74C3C` with thicker stroke width.
 
-### 2.3 Animation Replay Mechanism
+### 2.4 Animation Replay Mechanism
 - Pure linear step index `int currentStepIndex` advancing through `trace.getSteps()`.
 - Standard JavaFX `Timeline` with `KeyFrame(Duration.millis(600))` calling `stepForward()`.
 - Buttons:
@@ -47,7 +56,7 @@ Phase 2 delivers the interactive visual layer of ExamGuard:
   - `Step-Forward`: Pauses the timeline and advances exactly 1 step.
   - `Reset`: Stops the timeline, resets step index to 0, and restores initial graph state.
 
-### 2.4 Preloaded Startup Dataset
+### 2.5 Preloaded Startup Dataset
 - 6 university subjects:
   - `CS101` (Intro to Programming)
   - `CS102` (Data Structures)
@@ -62,6 +71,7 @@ Phase 2 delivers the interactive visual layer of ExamGuard:
 - `REQ-ANIM-02`: Dynamic visual highlights for vertices, candidate colors, and clashing edges.
 - `REQ-ANIM-03`: Animation playback controls (Play, Pause, Step, Reset).
 - `REQ-ANIM-04`: Plain-English explanation banner.
+- `REQ-ANIM-05`: Dynamic subject subset selection and live graph rebuilding.
 - `REQ-TIME-01`: Grouped timetable view by timeslot.
 - `REQ-TIME-02`: Conflict validation status badge.
 
