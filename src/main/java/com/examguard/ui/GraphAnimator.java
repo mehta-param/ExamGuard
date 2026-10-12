@@ -43,9 +43,6 @@ public class GraphAnimator {
                 stepForward();
             } else {
                 pause();
-                if (onFinished != null) {
-                    onFinished.run();
-                }
             }
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -174,6 +171,14 @@ public class GraphAnimator {
 
     public int getTotalSteps() {
         return (trace != null) ? trace.getSteps().size() : 0;
+    }
+
+    public boolean isCompleted() {
+        return trace != null && !trace.getSteps().isEmpty() && currentStepIndex >= trace.getSteps().size();
+    }
+
+    public boolean isInitialState() {
+        return currentStepIndex == 0 && currentColors.isEmpty();
     }
 
     public ExecutionTrace getTrace() {

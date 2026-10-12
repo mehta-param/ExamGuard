@@ -36,18 +36,18 @@ public class TimetablePanel extends VBox {
         // Header Title
         titleLabel = new Label("Exam Timetable");
         titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-        titleLabel.setTextFill(Color.web("#1E293B"));
+        titleLabel.setTextFill(Color.web("#0F172A"));
 
         subtitleLabel = new Label("Slots: 0 | Active Subjects: 0");
-        subtitleLabel.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-        subtitleLabel.setTextFill(Color.web("#64748B"));
+        subtitleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
+        subtitleLabel.setTextFill(Color.web("#334155"));
 
         // Status Badge (Pill)
         statusBadge = new Label("Awaiting Solution...");
         statusBadge.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
         statusBadge.setTextFill(Color.WHITE);
         statusBadge.setPadding(new Insets(4, 12, 4, 12));
-        setStatusBadgeStyle("#64748B"); // Neutral gray
+        setStatusBadgeStyle("#475569"); // Dark slate
 
         // Cards Container inside ScrollPane
         cardsContainer = new VBox(10);
@@ -89,16 +89,17 @@ public class TimetablePanel extends VBox {
         boolean isValid = schedule.isValid(graph);
         if (isValid) {
             statusBadge.setText("Zero Conflicts Verified ✓");
-            setStatusBadgeStyle("#10B981"); // Vibrant emerald green
+            setStatusBadgeStyle("#059669"); // Strong high-contrast emerald green
         } else {
             statusBadge.setText("Conflicts Detected ✗");
-            setStatusBadgeStyle("#EF4444"); // Red
+            setStatusBadgeStyle("#DC2626"); // Crimson red
         }
 
         Map<Integer, List<Subject>> slots = schedule.getSubjectsByTimeslot();
         if (slots.isEmpty()) {
             Label emptyLbl = new Label("No slots assigned.");
-            emptyLbl.setTextFill(Color.web("#94A3B8"));
+            emptyLbl.setFont(Font.font("Segoe UI", FontWeight.MEDIUM, 12));
+            emptyLbl.setTextFill(Color.web("#1E293B"));
             cardsContainer.getChildren().add(emptyLbl);
             return;
         }
@@ -113,14 +114,18 @@ public class TimetablePanel extends VBox {
     }
 
     private VBox createSlotCard(int slotNum, List<Subject> subjects) {
-        VBox card = new VBox(6);
+        VBox card = new VBox(8);
         card.setPadding(new Insets(10, 12, 10, 12));
         Color slotColor = GraphCanvas.getColorForSlot(slotNum);
         String hexColor = toHex(slotColor);
 
+        // Crisp white card with high-contrast borders and a distinct left stripe for slot color
         card.setStyle(String.format(
-                "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; " +
-                "-fx-border-radius: 8; -fx-background-radius: 8; -fx-border-width: 1;"
+                "-fx-background-color: #FFFFFF; " +
+                "-fx-border-color: #CBD5E1 #CBD5E1 #CBD5E1 %s; " +
+                "-fx-border-width: 1 1 1 5; " +
+                "-fx-border-radius: 6; -fx-background-radius: 6;",
+                hexColor
         ));
 
         // Slot Title Header with color dot
@@ -128,34 +133,37 @@ public class TimetablePanel extends VBox {
         slotHeader.setAlignment(Pos.CENTER_LEFT);
 
         Region colorDot = new Region();
-        colorDot.setMinSize(12, 12);
-        colorDot.setMaxSize(12, 12);
-        colorDot.setStyle(String.format("-fx-background-color: %s; -fx-background-radius: 6;", hexColor));
+        colorDot.setMinSize(14, 14);
+        colorDot.setMaxSize(14, 14);
+        colorDot.setStyle(String.format(
+                "-fx-background-color: %s; -fx-background-radius: 7; -fx-border-color: #64748B; -fx-border-width: 0.5; -fx-border-radius: 7;",
+                hexColor
+        ));
 
         Label slotTitle = new Label("Timeslot " + slotNum);
-        slotTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 13));
-        slotTitle.setTextFill(Color.web("#1E293B"));
+        slotTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        slotTitle.setTextFill(Color.web("#0F172A")); // Deep dark readable text
 
         Label countBadge = new Label("(" + subjects.size() + " exam" + (subjects.size() > 1 ? "s" : "") + ")");
-        countBadge.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 11));
-        countBadge.setTextFill(Color.web("#64748B"));
+        countBadge.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
+        countBadge.setTextFill(Color.web("#334155"));
 
         slotHeader.getChildren().addAll(colorDot, slotTitle, countBadge);
         card.getChildren().add(slotHeader);
 
         // Subject items
         for (Subject s : subjects) {
-            HBox itemRow = new HBox(6);
+            HBox itemRow = new HBox(8);
             itemRow.setAlignment(Pos.CENTER_LEFT);
 
             Label codeLbl = new Label(s.getCode());
-            codeLbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
+            codeLbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
             codeLbl.setTextFill(Color.web("#0F172A"));
-            codeLbl.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 4; -fx-padding: 2 6 2 6;");
+            codeLbl.setStyle("-fx-background-color: #F1F5F9; -fx-border-color: #CBD5E1; -fx-border-width: 1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 3 8 3 8;");
 
             Label nameLbl = new Label(s.getName());
-            nameLbl.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 11));
-            nameLbl.setTextFill(Color.web("#475569"));
+            nameLbl.setFont(Font.font("Segoe UI", FontWeight.SEMI_BOLD, 12));
+            nameLbl.setTextFill(Color.web("#0F172A")); // Maximum contrast dark text
 
             itemRow.getChildren().addAll(codeLbl, nameLbl);
             card.getChildren().add(itemRow);
@@ -171,7 +179,7 @@ public class TimetablePanel extends VBox {
     public void invalidate(String reason) {
         cardsContainer.getChildren().clear();
         statusBadge.setText("Awaiting Solution...");
-        setStatusBadgeStyle("#64748B");
+        setStatusBadgeStyle("#475569");
         subtitleLabel.setText("Selection updated. Run algorithm to solve.");
 
         VBox noticeBox = new VBox(8);
@@ -180,11 +188,11 @@ public class TimetablePanel extends VBox {
 
         Label noticeIcon = new Label("ℹ");
         noticeIcon.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
-        noticeIcon.setTextFill(Color.web("#94A3B8"));
+        noticeIcon.setTextFill(Color.web("#475569"));
 
         Label noticeMsg = new Label(reason != null ? reason : "Graph modified. Re-run algorithm to update schedule.");
-        noticeMsg.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-        noticeMsg.setTextFill(Color.web("#64748B"));
+        noticeMsg.setFont(Font.font("Segoe UI", FontWeight.MEDIUM, 12));
+        noticeMsg.setTextFill(Color.web("#0F172A")); // Dark readable text
         noticeMsg.setWrapText(true);
         noticeMsg.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 

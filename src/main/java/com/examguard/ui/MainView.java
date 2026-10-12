@@ -40,14 +40,16 @@ public class MainView extends BorderPane {
     private final Button stepBtn;
     private final Button resetBtn;
     private final Slider speedSlider;
+    private final Label playbackStatusLabel;
     private final Label stepCounterLabel;
     private final Label explanationBanner;
 
     // Checkbox mapping for dynamic subject filtering
     private final Map<Subject, CheckBox> subjectCheckboxes = new LinkedHashMap<>();
 
-    // Keep track of latest solved result for active selection
+    // State tracking
     private ColoringResult latestResult;
+    private boolean isInstantSolved = false;
 
     public MainView() {
         this.sampleData = new SampleData();
@@ -67,11 +69,13 @@ public class MainView extends BorderPane {
         this.instantSolveBtn = new Button("⚡ Instant Solve");
 
         // Playback bar controls
-        this.playBtn = new Button("Play");
-        this.pauseBtn = new Button("Pause");
-        this.stepBtn = new Button("Step ❯");
-        this.resetBtn = new Button("Reset ↺");
+        this.playBtn = new Button("▶ Play");
+        this.pauseBtn = new Button("⏸ Pause");
+        this.stepBtn = new Button("⏭ Step");
+        this.resetBtn = new Button("↺ Reset");
         this.speedSlider = new Slider(150, 1200, 600);
+        this.playbackStatusLabel = new Label("Status: Ready");
+        this.playbackStatusLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
         this.stepCounterLabel = new Label("Step 0 / 0");
         this.explanationBanner = new Label("Ready to solve. Choose an algorithm and click 'Run & Animate' or 'Instant Solve'.");
 
@@ -80,6 +84,7 @@ public class MainView extends BorderPane {
 
         // Initialize canvas with default graph
         canvas.setGraph(activeGraph);
+        updatePlaybackControls();
     }
 
     private void setupUI() {
@@ -180,10 +185,10 @@ public class MainView extends BorderPane {
         playbackBar.setPadding(new Insets(8, 12, 8, 12));
         playbackBar.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8;");
 
-        playBtn.setStyle("-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;");
-        pauseBtn.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;");
-        stepBtn.setStyle("-fx-background-color: #6366F1; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;");
-        resetBtn.setStyle("-fx-background-color: #94A3B8; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;");
+        playBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand;");
+        pauseBtn.setStyle("-fx-background-color: #D97706; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand;");
+        stepBtn.setStyle("-fx-background-color: #4F46E5; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand;");
+        resetBtn.setStyle("-fx-background-color: #475569; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand;");
 
         Label speedLabel = new Label("Speed:");
         speedLabel.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 11));
@@ -191,9 +196,9 @@ public class MainView extends BorderPane {
         speedSlider.setPrefWidth(100);
 
         stepCounterLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
-        stepCounterLabel.setTextFill(Color.web("#334155"));
+        stepCounterLabel.setTextFill(Color.web("#0F172A"));
 
-        playbackBar.getChildren().addAll(playBtn, pauseBtn, stepBtn, resetBtn, stepCounterLabel, speedLabel, speedSlider);
+        playbackBar.getChildren().addAll(playBtn, pauseBtn, stepBtn, resetBtn, playbackStatusLabel, stepCounterLabel, speedLabel, speedSlider);
 
         centerBox.getChildren().addAll(canvasContainer, explanationBanner, playbackBar);
         setCenter(centerBox);
@@ -210,8 +215,8 @@ public class MainView extends BorderPane {
 
         // Animator event listeners
         animator.setOnStepChanged(step -> {
-            updateStepCounter();
             explanationBanner.setText(step.getExplanation());
+            updatePlaybackControls();
         });
 
         animator.setOnFinished(() -> {
@@ -220,11 +225,12 @@ public class MainView extends BorderPane {
                 timetablePanel.updateSchedule(latestResult.toSchedule(activeGraph), activeGraph, algorithmSelector.getValue());
                 canvas.updateState(latestResult.getAssignments(), -1, -1);
             }
+            updatePlaybackControls();
         });
 
         animator.setOnReset(() -> {
-            updateStepCounter();
             explanationBanner.setText("Animation reset to initial uncolored state. Ready to replay.");
+            updatePlaybackControls();
         });
 
         // Speed slider inverted: higher value on slider -> faster (shorter duration)
@@ -234,10 +240,31 @@ public class MainView extends BorderPane {
         });
 
         // Playback buttons
-        playBtn.setOnAction(e -> animator.play());
-        pauseBtn.setOnAction(e -> animator.pause());
-        stepBtn.setOnAction(e -> animator.stepForward());
-        resetBtn.setOnAction(e -> animator.reset());
+        playBtn.setOnAction(e -> {
+            isInstantSolved = false;
+            animator.play();
+            updatePlaybackControls();
+        });
+
+        pauseBtn.setOnAction(e -> {
+            animator.pause();
+            updatePlaybackControls();
+        });
+
+        stepBtn.setOnAction(e -> {
+            isInstantSolved = false;
+            animator.stepForward();
+            updatePlaybackControls();
+        });
+
+        resetBtn.setOnAction(e -> {
+            isInstantSolved = false;
+            animator.reset();
+            canvas.resetColors();
+            timetablePanel.invalidate("Animation reset to initial state. Ready to replay.");
+            explanationBanner.setText("Animation reset to initial uncolored state. Ready to replay.");
+            updatePlaybackControls();
+        });
 
         // Algorithm runners
         runAnimateBtn.setOnAction(e -> runAlgorithm(true));
@@ -255,6 +282,7 @@ public class MainView extends BorderPane {
         // Stop animator
         animator.pause();
         animator.loadTrace(null);
+        isInstantSolved = false;
 
         // Filter selected subjects
         List<Subject> selected = new ArrayList<>();
@@ -272,9 +300,9 @@ public class MainView extends BorderPane {
         canvas.setGraph(activeGraph);
         timetablePanel.invalidate("Subject selection updated (" + selected.size() + " active). Run algorithm to generate schedule.");
 
-        updateStepCounter();
         explanationBanner.setText("Active graph rebuilt with " + selected.size() + " subjects and " +
                 activeGraph.getEdgeCount() + " conflict edges. Ready to solve.");
+        updatePlaybackControls();
     }
 
     private void setAllSubjectsSelected(boolean selected) {
@@ -300,24 +328,88 @@ public class MainView extends BorderPane {
         latestResult = algorithm.color(activeGraph);
 
         if (animate) {
+            isInstantSolved = false;
             animator.loadTrace(latestResult.getTrace());
             timetablePanel.invalidate("Algorithm animation in progress...");
             animator.play();
+            updatePlaybackControls();
         } else {
+            isInstantSolved = true;
             animator.pause();
-            animator.loadTrace(null);
+            animator.loadTrace(latestResult.getTrace());
             canvas.updateState(latestResult.getAssignments(), -1, -1);
             timetablePanel.updateSchedule(latestResult.toSchedule(activeGraph), activeGraph, algoChoice);
-            updateStepCounter();
             explanationBanner.setText(String.format("Instant solve complete (%s). %d timeslots used. Zero conflicts verified ✓",
                     algoChoice, latestResult.getColorsUsed()));
+            updatePlaybackControls();
         }
     }
 
-    private void updateStepCounter() {
-        int current = animator.getCurrentStepIndex();
+    private void updatePlaybackControls() {
+        boolean isPlaying = animator.isPlaying();
+        boolean isCompleted = isInstantSolved || animator.isCompleted();
+        boolean isAtStepZero = (animator.getCurrentStepIndex() == 0);
+        boolean hasTrace = (animator.getTrace() != null && !animator.getTrace().getSteps().isEmpty());
+        boolean hasNextStep = animator.hasNextStep();
+        boolean isInitialState = animator.isInitialState() && !isInstantSolved;
+
+        // Update step counter label
         int total = animator.getTotalSteps();
-        stepCounterLabel.setText("Step " + current + " / " + total);
+        if (isInstantSolved && total > 0) {
+            stepCounterLabel.setText("Step " + total + " / " + total);
+        } else {
+            stepCounterLabel.setText("Step " + animator.getCurrentStepIndex() + " / " + total);
+        }
+
+        // Distinct visible status text and styling (not relying on color alone)
+        if (isPlaying) {
+            playbackStatusLabel.setText("Status: Playing ▶");
+            playbackStatusLabel.setStyle("-fx-background-color: #DBEAFE; -fx-text-fill: #1D4ED8; -fx-font-weight: bold; -fx-padding: 3 8 3 8; -fx-background-radius: 4; -fx-border-color: #93C5FD; -fx-border-radius: 4;");
+        } else if (isCompleted) {
+            playbackStatusLabel.setText("Status: Completed ✓");
+            playbackStatusLabel.setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-font-weight: bold; -fx-padding: 3 8 3 8; -fx-background-radius: 4; -fx-border-color: #6EE7B7; -fx-border-radius: 4;");
+        } else if (hasTrace && !isAtStepZero) {
+            playbackStatusLabel.setText("Status: Paused ⏸");
+            playbackStatusLabel.setStyle("-fx-background-color: #FEF3C7; -fx-text-fill: #92400E; -fx-font-weight: bold; -fx-padding: 3 8 3 8; -fx-background-radius: 4; -fx-border-color: #FCD34D; -fx-border-radius: 4;");
+        } else {
+            playbackStatusLabel.setText("Status: Ready");
+            playbackStatusLabel.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-padding: 3 8 3 8; -fx-background-radius: 4; -fx-border-color: #CBD5E1; -fx-border-radius: 4;");
+        }
+
+        // Guaranteed state-driven button enable/disable properties
+        if (isPlaying) {
+            // While actively running: prevent duplicate starts, allow pause or reset
+            playBtn.setDisable(true);
+            pauseBtn.setDisable(false);
+            stepBtn.setDisable(true);
+            resetBtn.setDisable(false);
+            runAnimateBtn.setDisable(true);
+            instantSolveBtn.setDisable(true);
+        } else if (isCompleted) {
+            // When completed: Reset remains available, new runs can be started
+            playBtn.setDisable(true);
+            pauseBtn.setDisable(true);
+            stepBtn.setDisable(true);
+            resetBtn.setDisable(false);
+            runAnimateBtn.setDisable(false);
+            instantSolveBtn.setDisable(false);
+        } else if (hasTrace && !isAtStepZero) {
+            // Paused mid-animation: prevent duplicate runs while allowing resume/step/reset
+            playBtn.setDisable(!hasNextStep);
+            pauseBtn.setDisable(true);
+            stepBtn.setDisable(!hasNextStep);
+            resetBtn.setDisable(false);
+            runAnimateBtn.setDisable(true); // Prevents duplicate run while paused mid-animation
+            instantSolveBtn.setDisable(false);
+        } else {
+            // In initial state or reset to step 0
+            playBtn.setDisable(!hasNextStep);
+            pauseBtn.setDisable(true);
+            stepBtn.setDisable(!hasNextStep);
+            resetBtn.setDisable(isInitialState); // Disabled only if already in initial uncolored state
+            runAnimateBtn.setDisable(activeGraph == null || activeGraph.getVertexCount() == 0);
+            instantSolveBtn.setDisable(activeGraph == null || activeGraph.getVertexCount() == 0);
+        }
     }
 
     // Accessors for headless testing
