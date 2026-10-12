@@ -2,6 +2,7 @@ package com.examguard.ui;
 
 import com.examguard.algorithm.*;
 import com.examguard.data.SampleData;
+import com.examguard.db.DatabaseManager;
 import com.examguard.model.ConflictGraph;
 import com.examguard.model.ConflictGraphBuilder;
 import com.examguard.model.Schedule;
@@ -22,6 +23,7 @@ import java.util.*;
  */
 public class MainView extends BorderPane {
 
+    private DatabaseManager db;
     private final SampleData sampleData;
     private ConflictGraph activeGraph;
 
@@ -46,14 +48,20 @@ public class MainView extends BorderPane {
 
     // Checkbox mapping for dynamic subject filtering
     private final Map<Subject, CheckBox> subjectCheckboxes = new LinkedHashMap<>();
+    private VBox checkboxList;
 
     // State tracking
     private ColoringResult latestResult;
     private boolean isInstantSolved = false;
 
     public MainView() {
+        this(new DatabaseManager());
+    }
+
+    public MainView(DatabaseManager db) {
+        this.db = db;
         this.sampleData = new SampleData();
-        this.activeGraph = sampleData.getDefaultGraph();
+        this.activeGraph = (db != null) ? db.loadActiveConflictGraph() : sampleData.getDefaultGraph();
 
         // Canvas & Animator
         this.canvas = new GraphCanvas(580, 480);
@@ -136,16 +144,18 @@ public class MainView extends BorderPane {
         filterDesc.setTextFill(Color.web("#64748B"));
         filterDesc.setWrapText(true);
 
-        VBox checkboxList = new VBox(8);
-        checkboxList.setPadding(new Insets(4, 0, 4, 0));
+        this.checkboxList = new VBox(8);
+        this.checkboxList.setPadding(new Insets(4, 0, 4, 0));
 
-        for (Subject subject : sampleData.getSubjects()) {
+        List<Subject> initialSubjects = (db != null) ? db.getAllSubjects() : sampleData.getSubjects();
+        for (Subject subject : initialSubjects) {
             CheckBox cb = new CheckBox(subject.getCode() + " (" + subject.getName() + ")");
             cb.setSelected(true);
             cb.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
             cb.setStyle("-fx-text-fill: #334155;");
+            cb.selectedProperty().addListener((obs, oldVal, newVal) -> onSubjectSelectionChanged());
             subjectCheckboxes.put(subject, cb);
-            checkboxList.getChildren().add(cb);
+            this.checkboxList.getChildren().add(cb);
         }
 
         HBox selectAllRow = new HBox(8);
@@ -293,7 +303,11 @@ public class MainView extends BorderPane {
         }
 
         // Rebuild active graph from scratch with ONLY selected subjects
-        activeGraph = ConflictGraphBuilder.build(selected, sampleData.getEnrollments(), sampleData.getStudents());
+        if (db != null) {
+            activeGraph = ConflictGraphBuilder.build(selected, db.getAllEnrollments(), db.getAllStudents());
+        } else {
+            activeGraph = ConflictGraphBuilder.build(selected, sampleData.getEnrollments(), sampleData.getStudents());
+        }
         latestResult = null;
 
         // Invalidate Canvas and Timetable
@@ -302,6 +316,43 @@ public class MainView extends BorderPane {
 
         explanationBanner.setText("Active graph rebuilt with " + selected.size() + " subjects and " +
                 activeGraph.getEdgeCount() + " conflict edges. Ready to solve.");
+        updatePlaybackControls();
+    }
+
+    /**
+     * Rebuilds the UI and active conflict graph when SQLite database data changes.
+     */
+    public void reloadFromDatabase(DatabaseManager db) {
+        this.db = db;
+        // Stop animator
+        animator.pause();
+        animator.loadTrace(null);
+        isInstantSolved = false;
+        latestResult = null;
+
+        // Rebuild checkboxes
+        subjectCheckboxes.clear();
+        if (checkboxList != null) {
+            checkboxList.getChildren().clear();
+            List<Subject> all = db.getAllSubjects();
+            for (Subject subject : all) {
+                CheckBox cb = new CheckBox(subject.getCode() + " (" + subject.getName() + ")");
+                cb.setSelected(true);
+                cb.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
+                cb.setStyle("-fx-text-fill: #334155;");
+                cb.selectedProperty().addListener((obs, oldVal, newVal) -> onSubjectSelectionChanged());
+                subjectCheckboxes.put(subject, cb);
+                checkboxList.getChildren().add(cb);
+            }
+        }
+
+        // Rebuild active graph
+        activeGraph = db.loadActiveConflictGraph();
+        canvas.setGraph(activeGraph);
+        timetablePanel.invalidate("Data updated from database (" + activeGraph.getVertexCount() + " subjects). Run algorithm to generate schedule.");
+
+        explanationBanner.setText("Database state reloaded (" + activeGraph.getVertexCount() + " subjects, " +
+                activeGraph.getEdgeCount() + " conflict edges). Ready to solve.");
         updatePlaybackControls();
     }
 

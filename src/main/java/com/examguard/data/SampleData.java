@@ -30,14 +30,14 @@ public class SampleData {
         this.subjects = List.of(cs101, cs102, math101, math102, phys101, chem101);
 
         // 2. Initialize 8 Students
-        Student s1 = new Student(1, "Alice Smith", "alice@university.edu");
-        Student s2 = new Student(2, "Bob Jones", "bob@university.edu");
-        Student s3 = new Student(3, "Charlie Brown", "charlie@university.edu");
-        Student s4 = new Student(4, "David Clark", "david@university.edu");
-        Student s5 = new Student(5, "Emma Watson", "emma@university.edu");
-        Student s6 = new Student(6, "Frank Miller", "frank@university.edu");
-        Student s7 = new Student(7, "Grace Hopper", "grace@university.edu");
-        Student s8 = new Student(8, "Henry Ford", "henry@university.edu");
+        Student s1 = new Student(1, "STU-001", "Alice Smith");
+        Student s2 = new Student(2, "STU-002", "Bob Jones");
+        Student s3 = new Student(3, "STU-003", "Charlie Brown");
+        Student s4 = new Student(4, "STU-004", "David Clark");
+        Student s5 = new Student(5, "STU-005", "Emma Watson");
+        Student s6 = new Student(6, "STU-006", "Frank Miller");
+        Student s7 = new Student(7, "STU-007", "Grace Hopper");
+        Student s8 = new Student(8, "STU-008", "Henry Ford");
 
         this.students = List.of(s1, s2, s3, s4, s5, s6, s7, s8);
 
