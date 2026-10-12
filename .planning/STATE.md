@@ -11,7 +11,8 @@ See: `.planning/PROJECT.md` (updated 2026-10-12)
 
 - **Active Phase**: Phase 1
 - **Phase Goal**: Build project scaffolding, domain models, conflict graph builder, Welsh-Powell & Recursive Backtracking with execution tracing and unit tests.
-- **Status**: Ready to plan
+- **Context**: `.planning/phases/01-project-foundation-conflict-graph-pure-algorithms/01-CONTEXT.md`
+- **Status**: Ready to plan (`/gsd-plan-phase 1`)
 
 ## Phase Map
 
