@@ -3,9 +3,12 @@ package com.examguard.db;
 import com.examguard.model.ConflictGraph;
 import com.examguard.model.Student;
 import com.examguard.model.Subject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +23,7 @@ class DatabaseManagerTest {
         db = new DatabaseManager("jdbc:sqlite::memory:");
     }
 
-    @org.junit.jupiter.api.AfterEach
+    @AfterEach
     void tearDown() {
         if (db != null) {
             db.close();
@@ -105,15 +108,28 @@ class DatabaseManagerTest {
         assertTrue(enrolled.contains(s1.getId()));
         assertTrue(enrolled.contains(s2.getId()));
 
-        // Delete subject s1 -> cascade delete should remove enrollment
-        db.deleteSubject(s1.getId());
-        List<Integer> afterSubjDelete = db.getEnrolledSubjectIds(student.getId());
+        int s1Id = s1.getId();
+        int studentId = student.getId();
+
+        // Delete subject s1 -> cascade delete should remove enrollment from enrollments table
+        db.deleteSubject(s1Id);
+        List<Integer> afterSubjDelete = db.getEnrolledSubjectIds(studentId);
         assertEquals(1, afterSubjDelete.size());
         assertEquals(s2.getId(), afterSubjDelete.get(0));
 
-        // Delete student -> enrollments should be gone
-        db.deleteStudent(student.getId());
-        assertTrue(db.getEnrolledSubjectIds(student.getId()).isEmpty());
+        // Direct check: verify no orphan row with deleted subject_id exists in enrollments table
+        boolean hasOrphanSubjectEnrollment = db.getAllEnrollments().stream()
+                .anyMatch(e -> e.getSubjectId() == s1Id);
+        assertFalse(hasOrphanSubjectEnrollment, "Cascade delete must leave no orphan enrollment for deleted subject");
+
+        // Delete student -> enrollments should be gone from enrollments table
+        db.deleteStudent(studentId);
+        assertTrue(db.getEnrolledSubjectIds(studentId).isEmpty());
+
+        // Direct check: verify no orphan row with deleted student_id exists in enrollments table
+        boolean hasOrphanStudentEnrollment = db.getAllEnrollments().stream()
+                .anyMatch(e -> e.getStudentId() == studentId);
+        assertFalse(hasOrphanStudentEnrollment, "Cascade delete must leave no orphan enrollment for deleted student");
     }
 
     @Test
@@ -133,5 +149,60 @@ class DatabaseManagerTest {
         assertNotNull(graph);
         assertEquals(6, graph.getVertexCount(), "Active graph should have 6 vertices from sample data");
         assertEquals(8, graph.getEdgeCount(), "Active graph should have 8 edges from sample data");
+    }
+
+    @Test
+    void testPersistenceAcrossRestarts(@TempDir Path tempDir) {
+        String dbPath = tempDir.resolve("examguard_test_restart.db").toAbsolutePath().toString();
+        String jdbcUrl = "jdbc:sqlite:" + dbPath;
+
+        // 1. First "launch": Auto-seeds 6 subjects, 8 students.
+        try (DatabaseManager db1 = new DatabaseManager(jdbcUrl)) {
+            assertEquals(6, db1.getAllSubjects().size());
+
+            // Add custom subject and student
+            Subject customSubj = db1.insertSubject("CS401", "Distributed Systems");
+            Student customStu = db1.insertStudent("STU-777", "Donald Knuth");
+            db1.setStudentEnrollments(customStu.getId(), List.of(customSubj.getId()));
+
+            assertEquals(7, db1.getAllSubjects().size());
+            assertEquals(9, db1.getAllStudents().size());
+            assertEquals(17, db1.getAllEnrollments().size());
+        } // Connection closed simulating application exit
+
+        // 2. Second "launch": Connects to the same file. Must NOT re-seed and MUST preserve data.
+        try (DatabaseManager db2 = new DatabaseManager(jdbcUrl)) {
+            assertEquals(7, db2.getAllSubjects().size(), "Subjects must survive restart");
+            assertEquals(9, db2.getAllStudents().size(), "Students must survive restart");
+            assertEquals(17, db2.getAllEnrollments().size(), "Enrollments must survive restart");
+
+            Subject loadedSubj = db2.getAllSubjects().stream()
+                    .filter(s -> s.getCode().equals("CS401"))
+                    .findFirst()
+                    .orElse(null);
+            assertNotNull(loadedSubj);
+            assertEquals("Distributed Systems", loadedSubj.getName());
+
+            Student loadedStu = db2.getAllStudents().stream()
+                    .filter(s -> s.getStudentId().equals("STU-777"))
+                    .findFirst()
+                    .orElse(null);
+            assertNotNull(loadedStu);
+            assertEquals("Donald Knuth", loadedStu.getName());
+
+            List<Integer> enrolled = db2.getEnrolledSubjectIds(loadedStu.getId());
+            assertEquals(1, enrolled.size());
+            assertEquals(loadedSubj.getId(), enrolled.get(0));
+        }
+    }
+
+    @Test
+    void testSeedingOnlyWhenEmpty() {
+        // Since setUp() initialized db with 6 subjects, calling seedIfEmpty() again must not duplicate
+        int initialSubjects = db.getAllSubjects().size();
+        assertEquals(6, initialSubjects);
+
+        db.seedIfEmpty();
+        assertEquals(6, db.getAllSubjects().size(), "seedIfEmpty must be a no-op when database is not empty");
     }
 }

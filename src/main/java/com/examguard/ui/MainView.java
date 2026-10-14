@@ -230,10 +230,16 @@ public class MainView extends BorderPane {
         });
 
         animator.setOnFinished(() -> {
-            explanationBanner.setText("Animation complete! Final conflict-free timetable verified.");
-            if (latestResult != null) {
-                timetablePanel.updateSchedule(latestResult.toSchedule(activeGraph), activeGraph, algorithmSelector.getValue());
-                canvas.updateState(latestResult.getAssignments(), -1, -1);
+            if (latestResult != null && !latestResult.isSuccess()) {
+                explanationBanner.setText("Backtracking aborted: Safety step limit (" + BacktrackingAlgorithm.DEFAULT_MAX_STEPS + " steps) exceeded.");
+                timetablePanel.invalidate("Backtracking search aborted due to safety step limit.");
+                canvas.resetColors();
+            } else {
+                explanationBanner.setText("Animation complete! Final conflict-free timetable verified.");
+                if (latestResult != null) {
+                    timetablePanel.updateSchedule(latestResult.toSchedule(activeGraph), activeGraph, algorithmSelector.getValue());
+                    canvas.updateState(latestResult.getAssignments(), -1, -1);
+                }
             }
             updatePlaybackControls();
         });
@@ -388,10 +394,16 @@ public class MainView extends BorderPane {
             isInstantSolved = true;
             animator.pause();
             animator.loadTrace(latestResult.getTrace());
-            canvas.updateState(latestResult.getAssignments(), -1, -1);
-            timetablePanel.updateSchedule(latestResult.toSchedule(activeGraph), activeGraph, algoChoice);
-            explanationBanner.setText(String.format("Instant solve complete (%s). %d timeslots used. Zero conflicts verified ✓",
-                    algoChoice, latestResult.getColorsUsed()));
+            if (!latestResult.isSuccess()) {
+                canvas.resetColors();
+                timetablePanel.invalidate("Search aborted: Safety step limit exceeded.");
+                explanationBanner.setText("Backtracking aborted: Safety step limit exceeded before finding optimal coloring.");
+            } else {
+                canvas.updateState(latestResult.getAssignments(), -1, -1);
+                timetablePanel.updateSchedule(latestResult.toSchedule(activeGraph), activeGraph, algoChoice);
+                explanationBanner.setText(String.format("Instant solve complete (%s). %d timeslots used. Zero conflicts verified ✓",
+                        algoChoice, latestResult.getColorsUsed()));
+            }
             updatePlaybackControls();
         }
     }

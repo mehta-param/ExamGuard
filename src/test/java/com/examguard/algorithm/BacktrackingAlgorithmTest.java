@@ -168,5 +168,11 @@ class BacktrackingAlgorithmTest {
         assertFalse(result.isSuccess(), "Should abort cleanly due to step limit");
         assertTrue(result.getMessage().contains("Step limit exceeded") || result.getMessage().contains("Aborted"),
             "Expected abortion message but was: " + result.getMessage());
+
+        // Also verify color(graph) chromatic search aborts cleanly without false optimality claim
+        ColoringResult fullResult = limitedAlgo.color(graph);
+        assertFalse(fullResult.isSuccess(), "color(graph) must report isSuccess = false on step limit hit");
+        assertTrue(fullResult.getMessage().contains("limit"), "Message must mention limit exceeded");
+        assertEquals(0, fullResult.getColorsUsed(), "Aborted result must report 0 colors used");
     }
 }
